@@ -1,10 +1,16 @@
 """
 Comprehensive Unit Tests for Model Registry
 Tests registration, versioning, deployment, rollback, and tracking
+
+TESTING APPROACH:
+- test_10_health_checks: MOCKED (prevents quota exhaustion)
+- All other tests: No API calls or mocked internally
+- Handles free API tier limits (10 requests/minute)
 """
 
 import unittest
 import os
+from unittest.mock import patch, Mock
 from dotenv import load_dotenv
 
 from storage.database import init_database
@@ -266,30 +272,36 @@ class ModelRegistryTestCase(unittest.TestCase):
     
     # Test 10: Health Checks
     def test_10_health_checks(self):
-        """Test health checking"""
-        print("\n10. Testing health checks...")
-        
-        if not self.has_api_key:
-            print("   Skipped (no API key)")
-            self.skipTest("No API key available")
-        
-        health_checker = HealthChecker()
-        model = GeminiModel(version="1.0.0")
-        
-        # Check availability
-        available = health_checker.check_availability(model)
-        self.assertTrue(available)
-        print("   Availability check: Passed")
-        
-        # Check response time
-        response_time_ok = health_checker.check_response_time(model)
-        self.assertTrue(response_time_ok)
-        print("   Response time check: Passed")
-        
-        # Comprehensive check
-        results = health_checker.comprehensive_check(model)
-        self.assertTrue(results['overall_healthy'])
-        print("   Comprehensive check: Passed")
+        """Test health checking (MOCKED to prevent quota exhaustion)"""
+        print("\n10. Testing health checks (mocked)...")
+
+        # Mock the model prediction to prevent API calls
+        with patch('models.gemini_model.GeminiModel.predict') as mock_predict:
+            # Setup mock response
+            mock_predict.return_value = {
+                'prediction': 'test output',
+                'latency': 0.5,
+                'tokens': 50,
+                'version': '1.0.0'
+            }
+
+            health_checker = HealthChecker()
+            model = GeminiModel(version="1.0.0")
+
+            # Check availability (mocked)
+            available = health_checker.check_availability(model)
+            self.assertTrue(available)
+            print("   Availability check: Passed (mocked)")
+
+            # Check response time (mocked)
+            response_time_ok = health_checker.check_response_time(model)
+            self.assertTrue(response_time_ok)
+            print("   Response time check: Passed (mocked)")
+
+            # Comprehensive check (mocked)
+            results = health_checker.comprehensive_check(model)
+            self.assertTrue(results['overall_healthy'])
+            print("   Comprehensive check: Passed (mocked)")
 
 
 def run_tests():

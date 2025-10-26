@@ -18,7 +18,7 @@ class GeminiModel(BaseModel):
     Google Gemini model implementation with versioning
     """
     
-    def __init__(self, version="1.0.0", model_name="gemini-2.0-flash-exp", api_key=None):
+    def __init__(self, version="1.0.0", model_name="gemini-2.0-flash", api_key=None):
         """
         Initialize Gemini model
         
